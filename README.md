@@ -1,4 +1,4 @@
-# primus-locky
+# primus-locky [![Build Status](https://travis-ci.org/neoziro/primus-locky.png)](https://travis-ci.org/neoziro/primus-locky)
 
 Primus locky is a primus extension for [locky](https://github.com/neoziro/locky), it provides a room based locking.
 
