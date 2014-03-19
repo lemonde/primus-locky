@@ -57,6 +57,7 @@ new Primus(server, {
     }
   }
 });
+```
 
 #### heartbeatInterval
 
@@ -67,7 +68,8 @@ new Primus(server, {
   locky: {
     heartbeatInterval: 2000
   }
-})
+});
+```
 
 ### Join room
 
