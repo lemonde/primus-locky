@@ -21,7 +21,10 @@ var PrimusLocky = require('primus-locky');
 
 var server = http.createServer();
 var primus = new Primus(server, {
-  locky: new Locky()
+  locky: {
+    client: new Locky(),
+    unserializeSpark: getUserIdFromSpark
+  }
 });
 
 primus.use('locky', PrimusLocky);
