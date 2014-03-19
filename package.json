@@ -1,0 +1,41 @@
+{
+  "name": "primus-locky",
+  "version": "0.0.0",
+  "description": "Primus locky is a primus plugin for locky, it provides a room based locking.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/neoziro/primus-locky.git"
+  },
+  "keywords": [
+    "locky",
+    "primus",
+    "ws",
+    "lock",
+    "rooms"
+  ],
+  "author": "Greg Bergé <berge.greg@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/neoziro/primus-locky/issues"
+  },
+  "homepage": "https://github.com/neoziro/primus-locky",
+  "dependencies": {
+    "lodash": "~2.4.1"
+  },
+  "devDependencies": {
+    "sinon-chai": "~2.5.0",
+    "chai": "~1.9.0",
+    "sinon": "~1.9.0",
+    "mocha": "~1.18.2",
+    "primus-emitter": "~3.0.0",
+    "primus-rooms": "~3.0.1",
+    "primus": "~2.0.4",
+    "ws": "~0.4.31",
+    "locky": "~0.2.0",
+    "redis": "~0.10.1"
+  }
+}

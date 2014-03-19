@@ -29,14 +29,45 @@ primus.use('locky', PrimusLocky);
 
 ### Options
 
-Since primus-locky doesn't depends directly from [locky](https://github.com/neoziro/locky), you must inject a locky client in the options.
+#### client
+
+Since primus-locky doesn't depends directly from [locky](https://github.com/neoziro/locky), you must inject a [locky](https://github.com/neoziro/locky) client in the options.
 
 
 ```js
 new Primus(server, {
-  locky: new Locky()
+  locky: {
+    client: new Locky()
+  }
 })
 ```
+
+#### unserializeSpark
+
+With the room based locking, the user must be determined from the spark, if your client are logged you can retrieve it from them.
+
+```js
+new Primus(server, {
+  locky: {
+    unserializeSpark: function unserializeSpark(spark, cb) {
+      // Decode user id from headers.
+      // This function should be implemented by you.
+      var userId = getUserFromHeaders(spark.headers);
+      cb(null, userId);
+    }
+  }
+});
+
+#### heartbeatInterval
+
+Define the time between each heartbeat, by default `locky.ttl - 1000`. This time should be less than the locky TTL, else the lock will be losed between each tick.
+
+```js
+new Primus(server, {
+  locky: {
+    heartbeatInterval: 2000
+  }
+})
 
 ### Join room
 
@@ -62,9 +93,29 @@ The room based locking principle is very simple, it can be resume in four rules:
 
 The events are emitted only in the resource room.
 
-### primus.on('locky:locked', userId)
+### "locky:lock"
 
-Emitted when a user takes the lock on the resource.
+Emitted when a resource is locked by a user.
+
+```js
+primusClient.on('locky:lock', function (resourceId, user) { ... });
+```
+
+### "locky:unlock"
+
+Emitted a resource is unlocked.
+
+```js
+primusClient.on('locky:unlock', function (resourceId) { ... });
+```
+
+### "locky:expire"
+
+Emitted the lock on a resource has expired.
+
+```js
+primusClient.on('locky:expire', function (resourceId) { ... });
+```
 
 ## License
 
