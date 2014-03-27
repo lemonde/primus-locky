@@ -24,7 +24,10 @@
   },
   "homepage": "https://github.com/neoziro/primus-locky",
   "dependencies": {
-    "lodash": "~2.4.1"
+    "lodash": "^2.4.1"
+  },
+  "peerDependencies": {
+    "locky": "^0.3.0"
   },
   "devDependencies": {
     "sinon-chai": "~2.5.0",
