@@ -1,4 +1,5 @@
-# primus-locky [![Build Status](https://travis-ci.org/neoziro/primus-locky.png)](https://travis-ci.org/neoziro/primus-locky)
+# primus-locky
+[![Build Status](https://travis-ci.org/neoziro/primus-locky.svg?branch=master)](https://travis-ci.org/neoziro/primus-locky)
 
 Primus locky is a primus extension for [locky](https://github.com/neoziro/locky), it provides a room based locking.
 
@@ -55,8 +56,8 @@ new Primus(server, {
     unserializeSpark: function unserializeSpark(spark, cb) {
       // Decode user id from headers.
       // This function should be implemented by you.
-      var userId = getUserFromHeaders(spark.headers);
-      cb(null, userId);
+      var user = getUserFromHeaders(spark.headers);
+      cb(null, user);
     }
   }
 });
@@ -103,7 +104,7 @@ The events are emitted only in the resource room.
 Emitted when a resource is locked by a user.
 
 ```js
-primusClient.on('locky:lock', function (resourceId, user) { ... });
+primusClient.on('locky:lock', function (resource, user) { ... });
 ```
 
 ### "locky:unlock"
@@ -111,7 +112,7 @@ primusClient.on('locky:lock', function (resourceId, user) { ... });
 Emitted a resource is unlocked.
 
 ```js
-primusClient.on('locky:unlock', function (resourceId) { ... });
+primusClient.on('locky:unlock', function (resource) { ... });
 ```
 
 ### "locky:expire"
@@ -119,7 +120,7 @@ primusClient.on('locky:unlock', function (resourceId) { ... });
 Emitted the lock on a resource has expired.
 
 ```js
-primusClient.on('locky:expire', function (resourceId) { ... });
+primusClient.on('locky:expire', function (resource) { ... });
 ```
 
 ## License

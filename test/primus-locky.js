@@ -132,7 +132,11 @@ describe('Primus locky', function () {
           spark.join('locky:article');
 
           setTimeout(function () {
-            expect(locky.lock).to.be.calledWith('article', 'john');
+            expect(locky.lock).to.be.calledWith({
+              resource: 'article',
+              locker: 'john',
+              force: true
+            });
             done();
           }, 20);
         });
@@ -220,7 +224,11 @@ describe('Primus locky', function () {
               spark1.leave('locky:article');
 
               setTimeout(function () {
-                expect(locky.lock).to.be.calledWith('article', 'kingkong');
+                expect(locky.lock).to.be.calledWith({
+                  resource: 'article',
+                  locker: 'kingkong',
+                  force: true
+                });
                 done();
               }, 3000);
 
