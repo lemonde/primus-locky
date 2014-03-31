@@ -1,6 +1,6 @@
 {
   "name": "primus-locky",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Primus locky is a primus plugin for locky, it provides a room based locking.",
   "main": "index.js",
   "scripts": {
