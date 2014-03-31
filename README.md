@@ -84,6 +84,14 @@ You can find how to join a room in [primus-room](https://github.com/cayasso/prim
 spark.join('locky:article:13');
 ```
 
+### primus.lockyRoom(resource)
+
+This method can be used to target a locky room. It's the same API as `primus.room()`.
+
+```js
+primus.lockyRoom('myresource').send('hello');
+```
+
 ## Room based locking
 
 The room based locking principle is very simple, it can be resume in four rules:
@@ -94,34 +102,6 @@ The room based locking principle is very simple, it can be resume in four rules:
 - When a user leaves a room:
   - if he was alone in the room, nothing.
   - if there is other persons in the room, a random user takes the lock.
-
-## Events
-
-The events are emitted only in the resource room.
-
-### "locky:lock"
-
-Emitted when a resource is locked by a user.
-
-```js
-primusClient.on('locky:lock', function (resource, user) { ... });
-```
-
-### "locky:unlock"
-
-Emitted a resource is unlocked.
-
-```js
-primusClient.on('locky:unlock', function (resource) { ... });
-```
-
-### "locky:expire"
-
-Emitted the lock on a resource has expired.
-
-```js
-primusClient.on('locky:expire', function (resource) { ... });
-```
 
 ## License
 

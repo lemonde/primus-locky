@@ -242,21 +242,20 @@ describe('Primus locky', function () {
       });
     });
 
-    it('should broadcast events', function (done) {
-      var spy = sinon.spy();
+    describe('#lockyRoom', function () {
+      beforeEach(function () {
+        sinon.stub(primus, 'room');
+      });
 
-      srv.listen(client.port, function () {
-        primus.on('connection', function (spark) {
-          spark.join('locky:article');
+      afterEach(function () {
+        primus.room.restore();
+      });
 
-          setTimeout(function () {
-            expect(spy).to.be.calledWith('article', 'john');
-            done();
-          }, 20);
+      it('should return a room based on resource', function () {
+        srv.listen(client.port, function () {
+          primus.lockyRoom('resource');
+          expect(primus.room).to.be.calledWith('locky:resource');
         });
-
-        var client1 = client(srv, primus);
-        client1.on('locky:lock', spy);
       });
     });
   });
