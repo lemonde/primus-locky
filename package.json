@@ -23,22 +23,19 @@
     "url": "https://github.com/neoziro/primus-locky/issues"
   },
   "homepage": "https://github.com/neoziro/primus-locky",
-  "dependencies": {
-    "lodash": "^2.4.1"
-  },
   "peerDependencies": {
-    "locky": "^0.3.0"
+    "locky": "^0.3.2"
   },
   "devDependencies": {
-    "sinon-chai": "~2.5.0",
-    "chai": "~1.9.0",
-    "sinon": "~1.9.0",
-    "mocha": "~1.18.2",
-    "primus-emitter": "~3.0.0",
-    "primus-rooms": "~3.0.1",
-    "primus": "~2.0.4",
-    "ws": "~0.4.31",
-    "locky": "^0.3.0",
-    "redis": "~0.10.1"
+    "chai": "^1.9.1",
+    "locky": "^0.3.2",
+    "mocha": "^1.21.0",
+    "primus": "^2.3.0",
+    "primus-emitter": "^3.0.3",
+    "primus-rooms": "^3.0.5",
+    "redis": "^0.11.0",
+    "sinon": "^1.10.3",
+    "sinon-chai": "^2.5.0",
+    "ws": "^0.4.31"
   }
 }
