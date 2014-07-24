@@ -77,6 +77,18 @@ new Primus(server, {
 });
 ```
 
+#### autoLock
+
+Define if the lock will be take automatically by the first user or the last user in the room. Default to `true`.
+
+```js
+new Primus(server, {
+  locky: {
+    autoLock: false
+  }
+});
+```
+
 ### Join room
 
 You can find how to join a room in [primus-room](https://github.com/cayasso/primus-rooms#sparkjoinname-fn) plugin. To join a locky room, the only thing to do is to prefix it with `locky:`.

@@ -126,24 +126,138 @@ describe('Primus locky', function () {
       locky.close();
     });
 
-    it('should lock the resource when we join the room', function (done) {
-      srv.listen(client.port, function () {
-        primus.on('connection', function (spark) {
-          spark.join('locky:article');
+    describe('with autolock', function () {
+      it('should lock the resource when we join the room', function (done) {
+        srv.listen(client.port, function () {
+          primus.on('connection', function (spark) {
+            spark.join('locky:article');
 
-          setTimeout(function () {
-            expect(locky.lock).to.be.calledWith({
-              resource: 'article',
-              locker: 'john',
-              force: true
-            });
-            done();
-          }, 20);
+            setTimeout(function () {
+              expect(locky.lock).to.be.calledWith({
+                resource: 'article',
+                locker: 'john',
+                force: true
+              });
+              done();
+            }, 20);
+          });
+
+          client(srv, primus);
         });
+      });
 
-        client(srv, primus);
+      it('should give the lock to the next user when a user quit the room', function (done) {
+        this.timeout(4000);
+
+        var clientId = 1;
+        var spark1, spark2;
+
+        srv.listen(client.port, function () {
+          primus.on('connection', function (spark) {
+            spark.join('locky:article');
+
+            if (clientId === 1) {
+              spark1 = spark;
+              setTimeout(function () {
+                currentUser.name = 'kingkong';
+                client(srv, primus);
+              }, 20);
+            }
+
+            if (clientId === 2) {
+              spark2 = spark;
+
+              setTimeout(function () {
+                spark1.leave('locky:article');
+
+                setTimeout(function () {
+                  expect(locky.lock).to.be.calledWith({
+                    resource: 'article',
+                    locker: 'kingkong',
+                    force: true
+                  });
+                  done();
+                }, 3000);
+
+              }, 20);
+            }
+
+            clientId++;
+          });
+
+          client(srv, primus);
+        });
       });
     });
+
+    describe('without autolock', function () {
+      beforeEach(function () {
+        primus = server(srv, {
+          locky: {
+            client: locky,
+            unserializeSpark: function (spark, cb) {
+              cb(null, currentUser.name);
+            },
+            autoLock: false
+          }
+        });
+      });
+
+      it('should not lock the resource when we join the room', function (done) {
+        srv.listen(client.port, function () {
+          primus.on('connection', function (spark) {
+            spark.join('locky:article');
+
+            setTimeout(function () {
+              expect(locky.lock).to.not.be.called;
+              done();
+            }, 20);
+          });
+
+          client(srv, primus);
+        });
+      });
+
+      it('should not give the lock to the next user when a user quit the room', function (done) {
+        this.timeout(4000);
+
+        var clientId = 1;
+        var spark1, spark2;
+
+        srv.listen(client.port, function () {
+          primus.on('connection', function (spark) {
+            spark.join('locky:article');
+
+            if (clientId === 1) {
+              spark1 = spark;
+              setTimeout(function () {
+                currentUser.name = 'kingkong';
+                client(srv, primus);
+              }, 20);
+            }
+
+            if (clientId === 2) {
+              spark2 = spark;
+
+              setTimeout(function () {
+                spark1.leave('locky:article');
+
+                setTimeout(function () {
+                  expect(locky.lock).to.not.be.called;
+                  done();
+                }, 3000);
+
+              }, 20);
+            }
+
+            clientId++;
+          });
+
+          client(srv, primus);
+        });
+      });
+    });
+
 
     it('should refresh if the same user re-join the room', function (done) {
       var clientId = 1;
@@ -189,49 +303,6 @@ describe('Primus locky', function () {
               expect(locky.refresh).to.not.be.called;
               expect(locky.lock).to.be.calledOnce;
               done();
-            }, 20);
-          }
-
-          clientId++;
-        });
-
-        client(srv, primus);
-      });
-    });
-
-    it('should give the lock to the next user when a user quit the room', function (done) {
-      this.timeout(4000);
-
-      var clientId = 1;
-      var spark1, spark2;
-
-      srv.listen(client.port, function () {
-        primus.on('connection', function (spark) {
-          spark.join('locky:article');
-
-          if (clientId === 1) {
-            spark1 = spark;
-            setTimeout(function () {
-              currentUser.name = 'kingkong';
-              client(srv, primus);
-            }, 20);
-          }
-
-          if (clientId === 2) {
-            spark2 = spark;
-
-            setTimeout(function () {
-              spark1.leave('locky:article');
-
-              setTimeout(function () {
-                expect(locky.lock).to.be.calledWith({
-                  resource: 'article',
-                  locker: 'kingkong',
-                  force: true
-                });
-                done();
-              }, 3000);
-
             }, 20);
           }
 
