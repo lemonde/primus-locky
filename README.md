@@ -1,5 +1,7 @@
 # primus-locky
 [![Build Status](https://travis-ci.org/neoziro/primus-locky.svg?branch=master)](https://travis-ci.org/neoziro/primus-locky)
+[![Dependency Status](https://david-dm.org/neoziro/primus-locky.svg?theme=shields.io)](https://david-dm.org/neoziro/primus-locky)
+[![devDependency Status](https://david-dm.org/neoziro/primus-locky/dev-status.svg?theme=shields.io)](https://david-dm.org/neoziro/primus-locky#info=devDependencies)
 
 Primus locky is a primus extension for [locky](https://github.com/neoziro/locky), it provides a room based locking.
 
