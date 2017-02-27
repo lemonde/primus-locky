@@ -31,8 +31,8 @@ Object.defineProperty(client, 'port', {
  */
 
 function client(srv, primus, port){
-  var addr = srv.address();
-  var url = 'http://' + addr.address + ':' + (port || addr.port);
+  const addr = srv.address();
+  const url = `http://0.0.0.0:${port || addr.port}`;
   return new primus.Socket(url);
 }
 
@@ -124,6 +124,60 @@ describe('Primus locky', () => {
         primus.end();
 
       locky.close();
+    });
+
+    it('should refresh if the same user re-join the room', (done) => {
+      let clientId = 1;
+
+      srv.listen(client.port, () => {
+        primus.on('connection', (spark) => {
+          spark.join('locky:article');
+
+          if (clientId === 1) {
+            client(srv, primus);
+          }
+
+          if (clientId === 2) {
+            setTimeout(() => {
+              expect(locky.refresh).to.be.calledWith('article');
+              done();
+            }, 20);
+          }
+
+          clientId++;
+        });
+
+        client(srv, primus);
+      });
+    });
+
+    it('should do nothing if a differend user join the room', (done) => {
+      let clientId = 1;
+
+      srv.listen(client.port, () => {
+        primus.on('connection', (spark) => {
+          spark.join('locky:article');
+
+          if (clientId === 1) {
+            setTimeout(() => {
+              currentUser.name = 'kingkong';
+              client(srv, primus);
+            }, 20);
+          }
+
+          if (clientId === 2) {
+            setTimeout(() => {
+              expect(locky.refresh).to.not.be.called;
+              expect(locky.lock).to.be.calledOnce;
+              done();
+            }, 20);
+          }
+
+          clientId++;
+        });
+
+        client(srv, primus);
+      });
     });
 
     describe('with autolock', () => {
@@ -255,61 +309,6 @@ describe('Primus locky', () => {
 
           client(srv, primus);
         });
-      });
-    });
-
-
-    it('should refresh if the same user re-join the room', (done) => {
-      let clientId = 1;
-
-      srv.listen(client.port, () => {
-        primus.on('connection', (spark) => {
-          spark.join('locky:article');
-
-          if (clientId === 1) {
-            client(srv, primus);
-          }
-
-          if (clientId === 2) {
-            setTimeout(() => {
-              expect(locky.refresh).to.be.calledWith('article');
-              done();
-            }, 20);
-          }
-
-          clientId++;
-        });
-
-        client(srv, primus);
-      });
-    });
-
-    it('should do nothing if a differend user join the room', (done) => {
-      let clientId = 1;
-
-      srv.listen(client.port, () => {
-        primus.on('connection', (spark) => {
-          spark.join('locky:article');
-
-          if (clientId === 1) {
-            setTimeout(() => {
-              currentUser.name = 'kingkong';
-              client(srv, primus);
-            }, 20);
-          }
-
-          if (clientId === 2) {
-            setTimeout(() => {
-              expect(locky.refresh).to.not.be.called;
-              expect(locky.lock).to.be.calledOnce;
-              done();
-            }, 20);
-          }
-
-          clientId++;
-        });
-
-        client(srv, primus);
       });
     });
 
