@@ -1,13 +1,14 @@
-var sinon = require('sinon');
-var redis = require('redis');
-var http = require('http').Server;
-var Locky = require('locky');
-var Primus = require('primus');
-var PrimusRooms = require('primus-rooms');
-var PrimusEmitter = require('primus-emitter');
-var PrimusLocky = require('../index');
-var expect = require('chai').use(require('sinon-chai')).expect;
-var PORT = 1111;
+const sinon = require('sinon');
+const redis = require('redis');
+const http = require('http').Server;
+const Locky = require('locky');
+const Primus = require('primus');
+const PrimusRooms = require('primus-rooms');
+const PrimusEmitter = require('primus-emitter');
+const PrimusLocky = require('../index');
+const expect = require('chai').use(require('sinon-chai')).expect;
+
+let PORT = 1111;
 
 
 /**
@@ -15,7 +16,7 @@ var PORT = 1111;
  */
 
 Object.defineProperty(client, 'port', {
-  get: function () {
+  get: () => {
     return PORT++;
   }
 });
@@ -30,8 +31,8 @@ Object.defineProperty(client, 'port', {
  */
 
 function client(srv, primus, port){
-  var addr = srv.address();
-  var url = 'http://' + addr.address + ':' + (port || addr.port);
+  const addr = srv.address();
+  const url = `http://0.0.0.0:${port || addr.port}`;
   return new primus.Socket(url);
 }
 
@@ -45,34 +46,35 @@ function client(srv, primus, port){
 
 function server(srv, opts) {
   return new Primus(srv, opts)
-    .use('rooms', PrimusRooms)
-    .use('emitter', PrimusEmitter)
-    .use('locky', PrimusLocky);
+  .use('rooms', PrimusRooms)
+  .use('emitter', PrimusEmitter)
+  .use('locky', PrimusLocky);
 }
 
-describe('Primus locky', function () {
+describe('Primus locky', () => {
 
-  beforeEach(function (done) {
-    var client = redis.createClient();
-    client.flushdb(function (err) {
+  beforeEach((done) => {
+    const client = redis.createClient();
+
+    client.flushdb((err) => {
       if (err) return done(err);
       client.quit(done);
     });
   });
 
-  it('should return an error if there is no locky client', function () {
+  it('should return an error if there is no locky client', () => {
     function createServer() {
-      var srv = http();
+      const srv = http();
       server(srv, {});
     }
 
     expect(createServer).to.throw('You must define a locky client.');
   });
 
-  it('should return an error if there is no TTL', function () {
+  it('should return an error if there is no TTL', () => {
     function createServer() {
-      var locky = new Locky();
-      var srv = http();
+      const locky = new Locky();
+      const srv = http();
       server(srv, {
         locky: {
           client: locky
@@ -83,10 +85,10 @@ describe('Primus locky', function () {
     expect(createServer).to.throw('You must specify a TTL for the lock.');
   });
 
-  it('should return an error if `unserializeSpark` is not implemented', function () {
+  it('should return an error if `unserializeSpark` is not implemented', () => {
     function createServer() {
-      var locky = new Locky({ ttl: 2000 });
-      var srv = http();
+      const locky = new Locky({ ttl: 2000 });
+      const srv = http();
       server(srv, {
         locky: {
           client: locky
@@ -97,19 +99,17 @@ describe('Primus locky', function () {
     expect(createServer).to.throw('You must implement an unserializeSpark function.');
   });
 
-  describe('with required options', function () {
-    var srv, primus, locky, currentUser;
+  describe('with required options', () => {
+    let srv, primus, locky, currentUser;
 
-    beforeEach(function () {
+    beforeEach(() => {
       currentUser = { name: 'john' };
       locky = new Locky({ ttl: 2000 });
       srv = http();
       primus = server(srv, {
         locky: {
           client: locky,
-          unserializeSpark: function (spark, cb) {
-            cb(null, currentUser.name);
-          }
+          unserializeSpark: (spark, cb) => cb(null, currentUser.name)
         }
       });
 
@@ -117,7 +117,7 @@ describe('Primus locky', function () {
       sinon.spy(locky, 'refresh');
     });
 
-    afterEach(function () {
+    afterEach(() => {
       if (primus.ignore)
         srv.close();
       else
@@ -126,13 +126,67 @@ describe('Primus locky', function () {
       locky.close();
     });
 
-    describe('with autolock', function () {
-      it('should lock the resource when we join the room', function (done) {
-        srv.listen(client.port, function () {
-          primus.on('connection', function (spark) {
+    it('should refresh if the same user re-join the room', (done) => {
+      let clientId = 1;
+
+      srv.listen(client.port, () => {
+        primus.on('connection', (spark) => {
+          spark.join('locky:article');
+
+          if (clientId === 1) {
+            client(srv, primus);
+          }
+
+          if (clientId === 2) {
+            setTimeout(() => {
+              expect(locky.refresh).to.be.calledWith('article');
+              done();
+            }, 20);
+          }
+
+          clientId++;
+        });
+
+        client(srv, primus);
+      });
+    });
+
+    it('should do nothing if a differend user join the room', (done) => {
+      let clientId = 1;
+
+      srv.listen(client.port, () => {
+        primus.on('connection', (spark) => {
+          spark.join('locky:article');
+
+          if (clientId === 1) {
+            setTimeout(() => {
+              currentUser.name = 'kingkong';
+              client(srv, primus);
+            }, 20);
+          }
+
+          if (clientId === 2) {
+            setTimeout(() => {
+              expect(locky.refresh).to.not.be.called;
+              expect(locky.lock).to.be.calledOnce;
+              done();
+            }, 20);
+          }
+
+          clientId++;
+        });
+
+        client(srv, primus);
+      });
+    });
+
+    describe('with autolock', () => {
+      it('should lock the resource when we join the room', (done) => {
+        srv.listen(client.port, () => {
+          primus.on('connection', (spark) => {
             spark.join('locky:article');
 
-            setTimeout(function () {
+            setTimeout(() => {
               expect(locky.lock).to.be.calledWith({
                 resource: 'article',
                 locker: 'john',
@@ -149,16 +203,16 @@ describe('Primus locky', function () {
       it('should give the lock to the next user when a user quit the room', function (done) {
         this.timeout(4000);
 
-        var clientId = 1;
-        var spark1, spark2;
+        let clientId = 1;
+        let spark1, spark2;
 
-        srv.listen(client.port, function () {
-          primus.on('connection', function (spark) {
+        srv.listen(client.port, () => {
+          primus.on('connection', (spark) => {
             spark.join('locky:article');
 
             if (clientId === 1) {
               spark1 = spark;
-              setTimeout(function () {
+              setTimeout(() => {
                 currentUser.name = 'kingkong';
                 client(srv, primus);
               }, 20);
@@ -167,10 +221,10 @@ describe('Primus locky', function () {
             if (clientId === 2) {
               spark2 = spark;
 
-              setTimeout(function () {
+              setTimeout(() => {
                 spark1.leave('locky:article');
 
-                setTimeout(function () {
+                setTimeout(() => {
                   expect(locky.lock).to.be.calledWith({
                     resource: 'article',
                     locker: 'kingkong',
@@ -190,12 +244,12 @@ describe('Primus locky', function () {
       });
     });
 
-    describe('without autolock', function () {
-      beforeEach(function () {
+    describe('without autolock', () => {
+      beforeEach(() => {
         primus = server(srv, {
           locky: {
             client: locky,
-            unserializeSpark: function (spark, cb) {
+            unserializeSpark: (spark, cb) => {
               cb(null, currentUser.name);
             },
             autoLock: false
@@ -203,12 +257,12 @@ describe('Primus locky', function () {
         });
       });
 
-      it('should not lock the resource when we join the room', function (done) {
-        srv.listen(client.port, function () {
-          primus.on('connection', function (spark) {
+      it('should not lock the resource when we join the room', (done) => {
+        srv.listen(client.port, () => {
+          primus.on('connection', (spark) => {
             spark.join('locky:article');
 
-            setTimeout(function () {
+            setTimeout(() => {
               expect(locky.lock).to.not.be.called;
               done();
             }, 20);
@@ -221,16 +275,16 @@ describe('Primus locky', function () {
       it('should not give the lock to the next user when a user quit the room', function (done) {
         this.timeout(4000);
 
-        var clientId = 1;
-        var spark1, spark2;
+        let clientId = 1;
+        let spark1, spark2;
 
-        srv.listen(client.port, function () {
-          primus.on('connection', function (spark) {
+        srv.listen(client.port, () => {
+          primus.on('connection', (spark) => {
             spark.join('locky:article');
 
             if (clientId === 1) {
               spark1 = spark;
-              setTimeout(function () {
+              setTimeout(() => {
                 currentUser.name = 'kingkong';
                 client(srv, primus);
               }, 20);
@@ -239,10 +293,10 @@ describe('Primus locky', function () {
             if (clientId === 2) {
               spark2 = spark;
 
-              setTimeout(function () {
+              setTimeout(() => {
                 spark1.leave('locky:article');
 
-                setTimeout(function () {
+                setTimeout(() => {
                   expect(locky.lock).to.not.be.called;
                   done();
                 }, 3000);
@@ -258,72 +312,17 @@ describe('Primus locky', function () {
       });
     });
 
-
-    it('should refresh if the same user re-join the room', function (done) {
-      var clientId = 1;
-
-      srv.listen(client.port, function () {
-        primus.on('connection', function (spark) {
-          spark.join('locky:article');
-
-          if (clientId === 1) {
-            client(srv, primus);
-          }
-
-          if (clientId === 2) {
-            setTimeout(function () {
-              expect(locky.refresh).to.be.calledWith('article');
-              done();
-            }, 20);
-          }
-
-          clientId++;
-        });
-
-        client(srv, primus);
-      });
-    });
-
-    it('should do nothing if a differend user join the room', function (done) {
-      var clientId = 1;
-
-      srv.listen(client.port, function () {
-        primus.on('connection', function (spark) {
-          spark.join('locky:article');
-
-          if (clientId === 1) {
-            setTimeout(function () {
-              currentUser.name = 'kingkong';
-              client(srv, primus);
-            }, 20);
-          }
-
-          if (clientId === 2) {
-            setTimeout(function () {
-              expect(locky.refresh).to.not.be.called;
-              expect(locky.lock).to.be.calledOnce;
-              done();
-            }, 20);
-          }
-
-          clientId++;
-        });
-
-        client(srv, primus);
-      });
-    });
-
-    describe('#lockyRoom', function () {
-      beforeEach(function () {
+    describe('#lockyRoom', () => {
+      beforeEach(() => {
         sinon.stub(primus, 'room');
       });
 
-      afterEach(function () {
+      afterEach(() => {
         primus.room.restore();
       });
 
-      it('should return a room based on resource', function () {
-        srv.listen(client.port, function () {
+      it('should return a room based on resource', () => {
+        srv.listen(client.port, () => {
           primus.lockyRoom('resource');
           expect(primus.room).to.be.calledWith('locky:resource');
         });
