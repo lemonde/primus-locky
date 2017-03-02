@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const redis = require('redis');
+const redis = require('then-redis');
 const http = require('http').Server;
 const Locky = require('locky');
 const Primus = require('primus');
@@ -56,10 +56,9 @@ describe('Primus locky', () => {
   beforeEach((done) => {
     const client = redis.createClient();
 
-    client.flushdb((err) => {
-      if (err) return done(err);
-      client.quit(done);
-    });
+    client.flushdb()
+    .then(() => client.quit(done))
+    .catch(done);
   });
 
   it('should return an error if there is no locky client', () => {

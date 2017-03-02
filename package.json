@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "locky": "^0.3.3",
+    "locky": "^2.0.0",
     "mocha": "^3.2.0",
     "primus": "^5.2.0",
     "primus-emitter": "^3.0.3",
@@ -36,9 +36,11 @@
     "redis": "^2.6.5",
     "sinon": "^2.0.0-pre.6",
     "sinon-chai": "^2.8.0",
+    "then-redis": "^2.0.1",
     "ws": "^2.1.0"
   },
   "dependencies": {
+    "locky": "^2.0.0",
     "lodash": "^4.17.4"
   }
 }
