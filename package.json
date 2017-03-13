@@ -26,7 +26,7 @@
   "devDependencies": {
     "locky": "^2.1.0",
     "chai": "^3.5.0",
-    "locky": "^2.0.0",
+    "locky": "^2.2.0",
     "mocha": "^3.2.0",
     "primus": "^5.2.0",
     "primus-emitter": "^3.0.3",
