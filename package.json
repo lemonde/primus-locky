@@ -1,6 +1,6 @@
 {
   "name": "primus-locky",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Primus locky is a primus plugin for locky, it provides a room based locking.",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/neoziro/primus-locky",
   "devDependencies": {
-    "locky": "^2.1.0",
+    "locky": "^2.2.1",
     "chai": "^3.5.0",
     "locky": "^2.2.0",
     "mocha": "^3.2.0",
